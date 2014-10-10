@@ -18,11 +18,11 @@ bl_info = {
     "location" : "File > Import"
 }
 
-# Not In Use Yet: For Multiprocessing Module
+# Not In Use Yet: For implementing Multiprocessing Module
 def worker(ImportLiDARData):
     print("")
 
-# Not In Use Yet: For Multiprocessing Module
+# Not In Use Yet: For implementing Multiprocessing Module
 def worker_complete(result):
     print("")
 
@@ -35,18 +35,27 @@ def read_lidar_data(context, filepath, use_some_setting):
     # empty list for coordinates
     coords = []
 
+    # Use this array for face construction if we decide to calculate them during import
+    # faces = []
+
     # open the file
     f = file.File(filepath,mode='r')
 
     # lets get some header information from the file
     fileCount = f.header.count
 
+    # iterate through the point cloud and import the X Y Z coords into the array
     for p in f:
         coords.append((p.x, p.y, p.z))
         print("XYZ: ", p.x, ", ", p.y, ", ", p.z)
 
+    # create a new mesh
     me = bpy.data.meshes.new("LidarMesh")
+
+    # create a new object with the mesh
     obj = bpy.data.objects.new("LidarObject", me)
+
+    # link the mesh to the scene
     bpy.context.scene.objects.link(obj)
     me.from_pydata(coords,[],[])
 
@@ -64,6 +73,9 @@ def read_lidar_data(context, filepath, use_some_setting):
     print("File: ", filepath)
 
     print("completed read_lidar_data...")
+
+    context.area.header_text_set()
+
     return {'FINISHED'}
 
 
