@@ -53,7 +53,7 @@ def read_lidar_data(context, filepath, use_some_setting):
 
     # iterate through the point cloud and import the X Y Z coords into the array
     for p in f:
-        coords.append((p.x-Xmin, p.y-Ymin, p.z-Zmin))
+        coords.append((p.x-Xmin-((Xmax-Xmin)/2), p.y-Ymin-((Ymax-Ymin)/2), p.z-Zmin))
 
         # Uncomment the following line for debugging purposes:
         # print("XYZ: ", p.x, ", ", p.y, ", ", p.z)
