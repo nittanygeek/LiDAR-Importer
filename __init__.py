@@ -43,11 +43,20 @@ def read_lidar_data(context, filepath, use_some_setting):
 
     # lets get some header information from the file
     fileCount = f.header.count
+    Xmax = f.header.max[0]
+    Ymax = f.header.max[1]
+    Zmax = f.header.max[2]
+
+    Xmin = f.header.min[0]
+    Ymin = f.header.min[1]
+    Zmin = f.header.min[2]
 
     # iterate through the point cloud and import the X Y Z coords into the array
     for p in f:
-        coords.append((p.x, p.y, p.z))
-        print("XYZ: ", p.x, ", ", p.y, ", ", p.z)
+        coords.append((p.x-Xmin, p.y-Ymin, p.z-Zmin))
+
+        # Uncomment the following line for debugging purposes:
+        # print("XYZ: ", p.x, ", ", p.y, ", ", p.z)
 
     # create a new mesh
     me = bpy.data.meshes.new("LidarMesh")
@@ -55,17 +64,19 @@ def read_lidar_data(context, filepath, use_some_setting):
     # create a new object with the mesh
     obj = bpy.data.objects.new("LidarObject", me)
 
+    # reference to scene
+    scn = bpy.context.scene
+
     # link the mesh to the scene
-    bpy.context.scene.objects.link(obj)
+    scn.objects.link(obj)
+    scn.objects.active = obj
+    # obj.select = True
+
     me.from_pydata(coords,[],[])
+    me.update()
 
-    bpy.context.scene.objects.active = obj
-    bpy.data.objects['LidarObject'].select = True
-    bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-    bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-
-    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
-    obj.location = (0,0,0)
+    # bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+    # bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
     print(str(fileCount) + " verticies in the LiDAR Point Cloud")
 
