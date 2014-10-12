@@ -3,6 +3,7 @@ import binascii
 import struct
 from liblas import file
 from liblas import header
+from liblas import color
 import multiprocessing
 import time
 
@@ -26,7 +27,7 @@ def worker(ImportLiDARData):
 def worker_complete(result):
     print("")
 
-def read_lidar_data(context, filepath, use_some_setting):
+def read_lidar_data(context, filepath, pointCloudResolution, cleanScene):
     print("running read_lidar_data")
 
     # importer start time
@@ -34,6 +35,25 @@ def read_lidar_data(context, filepath, use_some_setting):
 
     # empty list for coordinates
     coords = []
+
+    # reference to scene
+    scn = bpy.context.scene
+
+    # clear the scene if specified during file selection:
+    if (cleanScene):
+        for obj in scn.objects:
+            obj.select = True
+        bpy.ops.object.delete()
+
+    # create a new mesh
+    me = bpy.data.meshes.new("LidarMesh")
+
+    # create a new object with the mesh
+    obj = bpy.data.objects.new("LidarObject", me)
+
+    # link the mesh to the scene
+    scn.objects.link(obj)
+    scn.objects.active = obj
 
     # Use this array for face construction if we decide to calculate them during import
     # faces = []
@@ -51,26 +71,17 @@ def read_lidar_data(context, filepath, use_some_setting):
     Ymin = f.header.min[1]
     Zmin = f.header.min[2]
 
+    # use this value for limiting the maximum number of points.  Set to f.header.count for maximum.
+    maxNumPoints = f.header.count
+
     # iterate through the point cloud and import the X Y Z coords into the array
     for p in f:
-        coords.append((p.x-Xmin-((Xmax-Xmin)/2), p.y-Ymin-((Ymax-Ymin)/2), p.z-Zmin))
+        if maxNumPoints > 0:
+          coords.append((p.x-Xmin-((Xmax-Xmin)/2), p.y-Ymin-((Ymax-Ymin)/2), p.z-Zmin))
+          maxNumPoints -= 1
 
         # Uncomment the following line for debugging purposes:
-        # print("XYZ: ", p.x, ", ", p.y, ", ", p.z)
-
-    # create a new mesh
-    me = bpy.data.meshes.new("LidarMesh")
-
-    # create a new object with the mesh
-    obj = bpy.data.objects.new("LidarObject", me)
-
-    # reference to scene
-    scn = bpy.context.scene
-
-    # link the mesh to the scene
-    scn.objects.link(obj)
-    scn.objects.active = obj
-    # obj.select = True
+        print("XYZ: ", p.x, ", ", p.y, ", ", p.z, " Color: ", p.scan_angle)
 
     me.from_pydata(coords,[],[])
     me.update()
@@ -83,7 +94,13 @@ def read_lidar_data(context, filepath, use_some_setting):
     print("Total time to process (seconds): ", time.time() - start_time)
     print("File: ", filepath)
 
+    c = color.Color()
+    print("Red: ", c.red)
+    print("Green: ", c.green)
+    print("Blue: ", c.blue)
+
     print("completed read_lidar_data...")
+    print("Percentage of points imported: ", pointCloudResolution)
 
     context.area.header_text_set()
 
@@ -93,9 +110,8 @@ def read_lidar_data(context, filepath, use_some_setting):
 # ImportHelper is a helper class, defines filename and
 # invoke() function which calls the file selector.
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty
 from bpy.types import Operator
-
 
 class ImportLiDARData(Operator, ImportHelper):
     """Load a LiDAR .las file"""
@@ -110,16 +126,38 @@ class ImportLiDARData(Operator, ImportHelper):
             options={'HIDDEN'},
             )
 
-    # List of operator properties, the attributes will be assigned
-    # to the class instance from the operator settings before calling.
-    use_setting = BoolProperty(
-            name="Example Boolean",
-            description="Example Tooltip",
-            default=True,
+    # List of operator properties, the attributes will be assigned to the class instance from the operator settings before calling.
+    pointCloudResolution = IntProperty(
+            name="Point Resolution",
+            min=1,
+            max=100,
+            description="This is a percentage resolution of the total point cloud to import.",
+            default=100,
             )
 
+    cleanScene = BoolProperty(
+            name="Empty Scene",
+            description="Enable to remove all objects from current scene",
+            default=True
+    )
+
     def execute(self, context):
-        return read_lidar_data(context, self.filepath, self.use_setting)
+        return read_lidar_data(context, self.filepath, self.pointCloudResolution, self.cleanScene)
+
+
+# Addon GUI Panel
+class LiDARPanel(bpy.types.Panel):
+    """LiDAR Addon Panel"""
+    bl_label = "LiDAR Addon"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
+    bl_category = "LiDAR Tools"
+
+    def draw(self, context):
+
+        layout = self.layout
+        row = layout.row()
+        row.operator("import_mesh.lidar")
 
 
 # Only needed if you want to add into a dynamic menu
@@ -129,11 +167,13 @@ def menu_func_import(self, context):
 
 def register():
     bpy.utils.register_class(ImportLiDARData)
+    bpy.utils.register_class(LiDARPanel)
     bpy.types.INFO_MT_file_import.append(menu_func_import)
 
 
 def unregister():
     bpy.utils.unregister_class(ImportLiDARData)
+    bpy.utils.unregister_class(LiDARPanel)
     bpy.types.INFO_MT_file_import.remove(menu_func_import)
 
 
