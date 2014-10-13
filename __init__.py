@@ -8,6 +8,12 @@ import multiprocessing
 import time
 import bgl
 
+# ImportHelper is a helper class, defines filename and
+# invoke() function which calls the file selector.
+from bpy_extras.io_utils import ImportHelper
+from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty
+from bpy.types import Operator
+
 # Blender Addon Information
 # Used by User Preferences > Addons
 bl_info = {
@@ -152,12 +158,6 @@ def read_lidar_data(context, filepath, pointCloudResolution, cleanScene):
   context.area.header_text_set()
 
   return {'FINISHED'}
-
-# ImportHelper is a helper class, defines filename and
-# invoke() function which calls the file selector.
-from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty
-from bpy.types import Operator
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_import(self, context):
