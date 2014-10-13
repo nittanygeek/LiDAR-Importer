@@ -10,10 +10,13 @@ You will need the liblas python module found here: https://github.com/libLAS/lib
 
 ### Mac OS X:
 Download and move the LiDAR-Importer directory into:
+```
 ~/Library/Application\ Support/Blender/[_version_]/scripts/addons/
-
+```
 Download the liblas python module and move the liblas directory into:
+```
 /Applications/Blender/blender.app/Contents/Resources/[_version_]/python/lib/python3.4/site-packages/
+```
 
 ## Version History:
 * Version 0.1 (10 October 2014)
