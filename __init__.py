@@ -63,7 +63,6 @@ class ImportLiDARData(Operator, ImportHelper):
     )
 
   def execute(self, context):
-    bgl.glbegin()
     return read_lidar_data(context, self.filepath, self.pointCloudResolution, self.cleanScene)
 
 # Addon GUI Panel
@@ -126,11 +125,19 @@ def read_lidar_data(context, filepath, pointCloudResolution, cleanScene):
 
   # use this value for limiting the maximum number of points.  Set to f.header.count for maximum.
   maxNumPoints = f.header.count
+  currentPoint = 0
+  wm = bpy.context.window_manager
+  wm.progress_begin(0, maxNumPoints/10)
 
   # iterate through the point cloud and import the X Y Z coords into the array
   for p in f:
     if maxNumPoints > 0:
       coords.append((p.x-Xmin-((Xmax-Xmin)/2), p.y-Ymin-((Ymax-Ymin)/2), p.z-Zmin))
+
+      if (((currentPoint/maxNumPoints)*100)%10 == 0):
+        wm.progress_update(currentPoint)
+
+      currentPoint +=1
       maxNumPoints -= 1
 
     # Uncomment the following line for debugging purposes:
@@ -142,20 +149,17 @@ def read_lidar_data(context, filepath, pointCloudResolution, cleanScene):
   # bpy.ops.object.mode_set(mode='EDIT', toggle=False)
   # bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
-  print(str(fileCount) + " verticies in the LiDAR Point Cloud")
+  print(str(fileCount), " verticies in file")
+  print(str(currentPoint), " verticies imported")
 
   print("Total time to process (seconds): ", time.time() - start_time)
   print("File: ", filepath)
-
-  c = color.Color()
-  print("Red: ", c.red)
-  print("Green: ", c.green)
-  print("Blue: ", c.blue)
 
   print("completed read_lidar_data...")
   print("Percentage of points imported: ", pointCloudResolution)
 
   context.area.header_text_set()
+  wm.progress_end()
 
   return {'FINISHED'}
 
