@@ -1,7 +1,7 @@
 LiDAR-Importer
 ==============
 
-This is a Blender LiDAR Importer built for the Boeing IT Case Competition, to handle importing LiDAR point cloud data sets and 3D object recognition.
+This is a Blender LiDAR Importer I built for importing LASer (LAS) point cloud data sets.  This addon currently ONLY supports te LAS file format and requires the liblas python module (see below).
 
 ![Screenshot of Imported LiDAR Data](http://i.imgur.com/h2cUBfH.png)
 
