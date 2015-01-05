@@ -3,7 +3,7 @@ LiDAR-Importer
 
 This is a Blender LiDAR Importer built for the Boeing IT Case Competition, to handle importing LiDAR point cloud data sets and 3D object recognition.
 
-[Screenshot of Imported LiDAR Data](http://i.imgur.com/h2cUBfH.png)
+![Screenshot of Imported LiDAR Data](http://i.imgur.com/h2cUBfH.png)
 
 ## Installation:
 
