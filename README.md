@@ -27,3 +27,6 @@ Coming soon ...
 
 ## Version History:
 * Version 0.1 (10 October 2014)
+
+## License:
+This code is available under the MIT License (see [LICENSE.txt](LICENSE.txt) for more information)
