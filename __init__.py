@@ -18,7 +18,7 @@ from bpy.types import Operator
 # Used by User Preferences > Addons
 bl_info = {
   "name" : "LiDAR Importer",
-  "author" : "Brian C. Hynds, James Wright",
+  "author" : "Brian C. Hynds",
   "version" : (0, 1),
   "blender" : (2, 6, 0),
   "description" : "LiDAR File Importer with 3D Object Recognition",
