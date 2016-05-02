@@ -1,7 +1,3 @@
-_Note: (13 February 2016) There have been reports that this importer is no longer working.  It was originally written in late 2014, and I haven't messed much with it since.  I've put it on my todo list of things to checkout when I get some time, so I'll post an update when I get a chance.  I think it's a problem with the liblas module, but I haven't troubleshooted it enough to know for sure._
-
-_(2 May 2016) I have the plugin working again and will update the installation instructions as soon as I can._
-
 LiDAR-Importer
 ==============
 
