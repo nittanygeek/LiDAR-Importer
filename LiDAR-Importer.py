@@ -26,7 +26,7 @@ bl_info = {
   "author" : "Brian C. Hynds",
   "version" : (0, 1),
   "blender" : (2, 80, 0),
-  "description" : "LiDAR File Importer with 3D Object Recognition",
+  "description" : "LiDAR File Importer",
   "category" : "Import-Export",
   "location" : "File > Import"
 }
