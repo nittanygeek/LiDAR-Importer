@@ -15,7 +15,7 @@ Clone the repository to your local machine:
 git clone https://github.com/nittanygeek/LiDAR-Importer.git
 ```
 In Blender, Navigate to Edit > Preferences, and click on Add-ons tab.
-Click "Install" at the top, and Select the LiDAR-Importer.py file from cloned repository.
+Click "Install" at the top, and Select the \__init__.py file from cloned repository.
 Activate the Addon
 
 ## Usage:
