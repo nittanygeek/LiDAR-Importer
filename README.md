@@ -1,4 +1,4 @@
-LiDAR-Importer
+Blender LiDAR Importer
 ==============
 
 This is a Blender LiDAR Importer I built for importing LASer (LAS) point cloud data sets.  This addon currently ONLY supports the LAS file format.
