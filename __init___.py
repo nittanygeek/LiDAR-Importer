@@ -22,8 +22,6 @@ bl_info = {
     "category" : "Import-Export"
 }
 
-from . import auto_load
-
 import bpy
 import os
 import sys
@@ -43,8 +41,6 @@ subprocess.call([str(py_exec),"-m", "pip", "install", "--user", "laspy"])
 import laspy
 import numpy as np
 from laspy.file import File
-
-auto_load.init()
 
 class OT_LiDARImportFileBrowser(Operator,ImportHelper):
     bl_idname = "import_mesh.lidar"
@@ -102,17 +98,15 @@ def importLidarDataToScene(context, filepath):
     return {'FINISHED'}
 
 def register():
-    auto_load.register()
     bpy.utils.register_class(OT_LiDARImportFileBrowser)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
-    auto_load.unregister()
     bpy.utils.unregister_class(OT_LiDARImportFileBrowser)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 if __name__ == "__main__":
     register()
-    
+
     # test call 
     bpy.ops.import_mesh.lidar('INVOKE_DEFAULT')
