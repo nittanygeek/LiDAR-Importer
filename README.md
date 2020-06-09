@@ -10,6 +10,11 @@ I have changed this plugin to use laspy instead of liblas, and it should be much
 The points are not centered after importing, so you will need to scale the object after importing before the verticies are visible in Blender's viewport.
 
 ## Install Instructions:
+Install laspy (https://pypi.org/project/laspy/):
+```
+pip install laspy
+```
+
 Clone the repository to your local machine:
 ```
 git clone https://github.com/nittanygeek/LiDAR-Importer.git
