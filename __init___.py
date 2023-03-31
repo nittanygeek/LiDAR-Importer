@@ -40,7 +40,6 @@ subprocess.call([str(py_exec),"-m", "pip", "install", "--user", "laspy"])
 
 import laspy
 import numpy as np
-from laspy.file import File
 
 class OT_LiDARImportFileBrowser(Operator,ImportHelper):
     bl_idname = "import_mesh.lidar"
@@ -76,13 +75,13 @@ def importLidarDataToScene(context, filepath):
     scn.collection.objects.link(obj)
 
     # Read the file
-    inFile = File(filepath, mode = "r")
+    las = laspy.read(filepath)
 
     # Get all the points
-    point_records = inFile.points
+    point_records = las.points
 
     # X,Y,Z Coords Array
-    coords = np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
+    coords = np.vstack((las.x, las.y, las.z)).transpose()
 
     # Update the Mesh
     me.from_pydata(coords,[],[])
@@ -91,9 +90,6 @@ def importLidarDataToScene(context, filepath):
     # Center to Origin
     obj.select_set(True)
     bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN', center='MEDIAN')
-
-    # Close the File
-    inFile.close()
 
     return {'FINISHED'}
 
