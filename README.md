@@ -8,12 +8,19 @@ Blender LiDAR Importer
 This is a Blender LiDAR Importer I built for importing LASer (LAS) point cloud data sets.  This addon currently ONLY supports the LAS file format.
 
 ## Install Instructions:
-1. Install laspy (https://pypi.org/project/laspy/):
+1. First, you'll need to install Laspy. Open Blender, go to the Scripting workspace, and in the Interactive Console type:
 ```
-python.exe -m pip install laspy
+import sys; sys.executable
 ```
+This will tell you where the python interpreter is that Blender is using.  For example: '/usr/bin/python3.10'
 
-2. Clone the repository to your local machine:
+Now, open a Terminal and install laspy by replacing the path to the interpreter to the one you just discovered above:
+```
+/replace/with/path/to/python -m pip install laspy
+```
+Note: You may need to use sudo on Linux if your OS requires it.
+
+2. Next, Clone this GitHub Repository to your local machine:
 ```
 git clone https://github.com/nittanygeek/LiDAR-Importer.git
 ```
