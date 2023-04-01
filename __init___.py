@@ -12,97 +12,92 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "LiDAR-Tools",
-    "author" : "Brian Hynds",
-    "description" : "Import LiDAR",
-    "blender" : (2, 80, 0),
-    "version" : (0, 0, 1),
-    "location" : "",
-    "warning" : "",
-    "category" : "Import-Export"
+    "name": "LiDAR-Tools",
+    "author": "Brian Hynds",
+    "version": (1, 0, 1),
+    "blender": (2, 93, 0),
+    "location": "File > Import > LAS data",
+    "description": "LiDAR Importer",
+    "warning": "",
+    "doc_url": "",
+    "category": "Import-Export",
 }
 
 import bpy
-import os
-import sys
-import subprocess
-from pathlib import Path
-
-from bpy.props import StringProperty, BoolProperty 
-from bpy_extras.io_utils import ImportHelper 
-from bpy.types import Operator
-
-py_path = Path(sys.prefix) / "bin"
-py_exec = next(py_path.glob("python*"))
-subprocess.call([str(py_exec), "-m", "ensurepip"])
-subprocess.call([str(py_exec), "-m", "pip", "install", "--upgrade", "pip"])
-subprocess.call([str(py_exec),"-m", "pip", "install", "--user", "laspy"])
-
 import laspy
 import numpy as np
+from bpy_extras.io_utils import ImportHelper
+from bpy.props import StringProperty
+from bpy.types import Operator
+from mathutils import Vector
 
-class OT_LiDARImportFileBrowser(Operator,ImportHelper):
-    bl_idname = "import_mesh.lidar"
-    bl_label = "Import LiDAR file"
-    filter_glob = StringProperty(
-        default='*.las;*.laz', 
-        options={'HIDDEN'}
-    )
+class IMPORT_OT_las_data(Operator, ImportHelper):
+    bl_idname = "import_scene.las_data"
+    bl_label = "Import LAS/LAZ data"
+    bl_options = {'PRESET', 'UNDO'}
+
+    filename_ext = ".las;.laz"  # Add support for LAZ files
+    filter_glob: StringProperty(default="*.las;*.laz", options={'HIDDEN'})  # Update the filter_glob to include LAZ files
+
+
+class IMPORT_OT_las_data(Operator, ImportHelper):
+    bl_idname = "import_scene.las_data"
+    bl_label = "Import LAS/LAZ data"
+    bl_options = {'PRESET', 'UNDO'}
+
+    filename_ext = ".las;.laz"  # Add support for LAZ files
+    filter_glob: StringProperty(default="*.las;*.laz", options={'HIDDEN'})  # Update the filter_glob to include LAZ files
 
     def execute(self, context):
+        # Read LAS/LAZ file
+        with laspy.open(self.filepath) as infile:
+            # Get LAS points
+            num_points_to_read = infile.header.point_count
+            all_points = infile.read_points(n=num_points_to_read)
+            points = np.array([(point['X'] * infile.header.x_scale + infile.header.x_offset,
+                                point['Y'] * infile.header.y_scale + infile.header.y_offset,
+                                point['Z'] * infile.header.z_scale + infile.header.z_offset)
+                            for point in all_points])
 
-        filename, extension = os.path.splitext(self.filepath)
+        # Import LAS points as a mesh
+        self.import_points_as_mesh(context, points)
 
-        return importLidarDataToScene(context, self.filepath)
+        return {'FINISHED'}
 
-# Menu Item for File > Import
+    def import_points_as_mesh(self, context, points):
+        # Create a new mesh object
+        mesh = bpy.data.meshes.new("LAS Data")
+        obj = bpy.data.objects.new("LAS Data", mesh)
+
+        # Link the mesh to the scene
+        context.collection.objects.link(obj)
+
+        # Create mesh vertices from points
+        mesh.from_pydata(points, [], [])
+
+        # Set mesh object's origin to the center of its bounding box and location to (0, 0, 0)
+        min_coords = [min(points, key=lambda coord: coord[i])[i] for i in range(3)]
+        max_coords = [max(points, key=lambda coord: coord[i])[i] for i in range(3)]
+        center = Vector([(min_coords[i] + max_coords[i]) / 2 for i in range(3)])
+        
+        for vertex in mesh.vertices:
+            vertex.co -= center
+
+        obj.location = Vector((0, 0, 0))
+
+        # Update mesh
+        mesh.update()
+
 def menu_func_import(self, context):
-    self.layout.operator(OT_LiDARImportFileBrowser.bl_idname, text="LiDAR Format (.las/.laz)")
-
-# Main Import Function (this is where the magic happens):
-def importLidarDataToScene(context, filepath):
-
-    # Get a reference to the scene
-    scn = bpy.context.scene
-
-    # Create a new mesh
-    me = bpy.data.meshes.new("LiDARMesh")
-
-    # Create a new object with the mesh
-    obj = bpy.data.objects.new("LiDARObj", me)
-
-    # Link the object to the scene
-    scn.collection.objects.link(obj)
-
-    # Read the file
-    las = laspy.read(filepath)
-
-    # Get all the points
-    point_records = las.points
-
-    # X,Y,Z Coords Array
-    coords = np.vstack((las.x, las.y, las.z)).transpose()
-
-    # Update the Mesh
-    me.from_pydata(coords,[],[])
-    me.update()
-
-    # Center to Origin
-    obj.select_set(True)
-    bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN', center='MEDIAN')
-
-    return {'FINISHED'}
+    self.layout.operator(IMPORT_OT_las_data.bl_idname, text="LAS/LAZ data (.las, .laz)")
 
 def register():
-    bpy.utils.register_class(OT_LiDARImportFileBrowser)
+    bpy.utils.register_class(IMPORT_OT_las_data)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
-    bpy.utils.unregister_class(OT_LiDARImportFileBrowser)
+    bpy.utils.unregister_class(IMPORT_OT_las_data)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 if __name__ == "__main__":
     register()
-
-    # test call 
-    bpy.ops.import_mesh.lidar('INVOKE_DEFAULT')
