@@ -15,10 +15,17 @@ import sys; sys.executable
 This will tell you where the python interpreter is that Blender is using.  For example: '/usr/bin/python3.10'
 
 Now, open a Terminal and install laspy by replacing the path to the interpreter to the one you just discovered above:
+
+Linux:
 ```
 /replace/with/path/to/python -m pip install laspy[lazrs]
 ```
 Note: You may need to use sudo on Linux if your OS requires it.
+
+Windows (replace the path with the correct version):
+```
+"C:\Program Files\Blender Foundation\Blender x.x\x.x\python\bin\python.exe" -m pip install laspy[lazrs]
+```
 
 2. Next, Clone this GitHub Repository to your local machine:
 ```
