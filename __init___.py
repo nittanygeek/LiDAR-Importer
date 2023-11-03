@@ -34,8 +34,7 @@ from mathutils import Vector
 def get_attribute(header, attr_name, default="N/A"):
     if hasattr(header, attr_name):
         return str(getattr(header, attr_name))
-    else:
-        return default
+    return default
 
 class IMPORT_OT_las_data(Operator, ImportHelper):
     bl_idname = "import_scene.las_data"
@@ -59,18 +58,16 @@ class IMPORT_OT_las_data(Operator, ImportHelper):
             # Get LAS points
             num_points_to_read = infile.header.point_count
             all_points = infile.read_points(n=num_points_to_read)
-            points = np.array([(point['X'] * infile.header.x_scale + infile.header.x_offset,
-                                point['Y'] * infile.header.y_scale + infile.header.y_offset,
-                                point['Z'] * infile.header.z_scale + infile.header.z_offset)
-                                for point in all_points])
 
-            # Prepare LiDAR info
-            lidar_info = {
-                'filepath': self.filepath,
-                'point_format': infile.header.point_format,
-                'point_count': num_points_to_read,
-                'header': infile.header
-            }
+        # Prepare LiDAR info
+        lidar_info = {
+            'filepath': self.filepath,
+            'point_format': infile.header.point_format,
+            'point_count': num_points_to_read,
+            'header': infile.header
+        }
+        points = np.array(all_points.array)
+        points = points[['X', 'Y', 'Z']]
 
         # Import LAS points as a mesh
         self.import_points_as_mesh(context, points, lidar_info)
@@ -100,16 +97,7 @@ class IMPORT_OT_las_data(Operator, ImportHelper):
 
         # Create mesh vertices from points
         mesh.from_pydata(points, [], [])
-
-        # Set mesh object's origin to the center of its bounding box and location to (0, 0, 0)
-        min_coords = [min(points, key=lambda coord: coord[i])[i] for i in range(3)]
-        max_coords = [max(points, key=lambda coord: coord[i])[i] for i in range(3)]
-        center = Vector([(min_coords[i] + max_coords[i]) / 2 for i in range(3)])
-        
-        for vertex in mesh.vertices:
-            vertex.co -= center
-
-        obj.location = Vector((0, 0, 0))
+        obj.scale = Vector(obj['lidar_scale'])
 
         # Update mesh
         mesh.update()
